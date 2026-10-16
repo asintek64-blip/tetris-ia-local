@@ -846,8 +846,8 @@ function createPiece() {
             if (linesCleared > 0) {
                 const points = [0, 100, 300, 500, 800];
                 score += points[linesCleared] * level;
-                level = Math.floor(score / 1000) + 1;
-                dropInterval = Math.max(100, 1000 - (level - 1) * 100);
+                level = Math.floor(score / 1500) + 1;
+                dropInterval = Math.max(150, 1000 * Math.pow(0.9, level - 1));
                 updateScore();
                 playSound('lineClear');
             }
@@ -895,10 +895,13 @@ function createPiece() {
             }
         }
 
-        function update() {
+        function update(time) {
             if (gameOver || paused) return;
 
-            dropCounter += (lastTime - dropCounter) * 0.016;
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            dropCounter += deltaTime;
             if (dropCounter >= dropInterval) {
                 dropCounter = 0;
                 if (!isValidMove(piece.x, piece.y)) {
@@ -911,9 +914,8 @@ function createPiece() {
         }
 
         function gameLoop(time) {
-            lastTime = time;
             animationTime = time;
-            update();
+            update(time);
             drawBoard();
             drawGhostPiece();
             drawPiece();
@@ -1078,7 +1080,7 @@ function createPiece() {
             level = 1;
             dropInterval = 1000;
             dropCounter = 0;
-            lastTime = performance.now();
+            lastTime = 0;
             createBoard();
             piece = createPiece();
             nextPiece = createPiece();
