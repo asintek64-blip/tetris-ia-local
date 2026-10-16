@@ -533,9 +533,12 @@
         let piece = null;
         let nextPiece = null;
         let dropCounter = 0;
-        let dropInterval = 1000;
+        let dropInterval = 1400;
         let lastTime = 0;
         let animationTime = 0;
+        let teclaLeftTimer = null;
+        let teclaRightTimer = null;
+        let teclaDownTimer = null;
 
         // Audio System
         let audioEnabled = true;
@@ -885,6 +888,12 @@ function createPiece() {
             paused = !paused;
             const overlay = document.getElementById('pauseOverlay');
             if (paused) {
+                if (teclaLeftTimer !== null) clearInterval(teclaLeftTimer);
+                if (teclaRightTimer !== null) clearInterval(teclaRightTimer);
+                if (teclaDownTimer !== null) clearInterval(teclaDownTimer);
+                teclaLeftTimer = null;
+                teclaRightTimer = null;
+                teclaDownTimer = null;
                 overlay.style.display = 'flex';
                 playSound('rotate');
             } else {
@@ -931,6 +940,13 @@ function createPiece() {
                         piece.x--;
                         playSound('move');
                     }
+                    if (teclaLeftTimer !== null) clearInterval(teclaLeftTimer);
+                    teclaLeftTimer = setInterval(() => {
+                        if (isValidMove(piece.x - 1, piece.y)) {
+                            piece.x--;
+                            playSound('move');
+                        }
+                    }, 120);
                     e.preventDefault();
                     break;
                 case 'ArrowRight':
@@ -938,6 +954,13 @@ function createPiece() {
                         piece.x++;
                         playSound('move');
                     }
+                    if (teclaRightTimer !== null) clearInterval(teclaRightTimer);
+                    teclaRightTimer = setInterval(() => {
+                        if (isValidMove(piece.x + 1, piece.y)) {
+                            piece.x++;
+                            playSound('move');
+                        }
+                    }, 120);
                     e.preventDefault();
                     break;
                 case 'ArrowDown':
@@ -948,6 +971,16 @@ function createPiece() {
                         drawGhostPiece();
                         drawPiece();
                     }
+                    if (teclaDownTimer !== null) clearInterval(teclaDownTimer);
+                    teclaDownTimer = setInterval(() => {
+                        if (isValidMove(piece.x, piece.y + 1)) {
+                            piece.y++;
+                            playSound('move');
+                            drawBoard();
+                            drawGhostPiece();
+                            drawPiece();
+                        }
+                    }, 60);
                     e.preventDefault();
                     break;
                 case 'ArrowUp':
@@ -977,20 +1010,32 @@ function createPiece() {
                 const action = btn.dataset.action;
                 btn.classList.add('active');
                 
-                setTimeout(() => btn.classList.remove('active'), 150);
-
                 switch(action) {
                     case 'left':
                         if (isValidMove(piece.x - 1, piece.y)) {
                             piece.x--;
                             playSound('move');
                         }
+                        if (teclaLeftTimer !== null) clearInterval(teclaLeftTimer);
+                        teclaLeftTimer = setInterval(() => {
+                            if (isValidMove(piece.x - 1, piece.y)) {
+                                piece.x--;
+                                playSound('move');
+                            }
+                        }, 120);
                         break;
                     case 'right':
                         if (isValidMove(piece.x + 1, piece.y)) {
                             piece.x++;
                             playSound('move');
                         }
+                        if (teclaRightTimer !== null) clearInterval(teclaRightTimer);
+                        teclaRightTimer = setInterval(() => {
+                            if (isValidMove(piece.x + 1, piece.y)) {
+                                piece.x++;
+                                playSound('move');
+                            }
+                        }, 120);
                         break;
                     case 'down':
                         if (isValidMove(piece.x, piece.y + 1)) {
@@ -1000,6 +1045,16 @@ function createPiece() {
                             drawGhostPiece();
                             drawPiece();
                         }
+                        if (teclaDownTimer !== null) clearInterval(teclaDownTimer);
+                        teclaDownTimer = setInterval(() => {
+                            if (isValidMove(piece.x, piece.y + 1)) {
+                                piece.y++;
+                                playSound('move');
+                                drawBoard();
+                                drawGhostPiece();
+                                drawPiece();
+                            }
+                        }, 60);
                         break;
                     case 'rotate':
                         rotate(piece);
@@ -1007,6 +1062,42 @@ function createPiece() {
                         drawGhostPiece();
                         drawPiece();
                         break;
+                }
+            });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                btn.classList.remove('active');
+                
+                if (teclaLeftTimer !== null) {
+                    clearInterval(teclaLeftTimer);
+                    teclaLeftTimer = null;
+                }
+                if (teclaRightTimer !== null) {
+                    clearInterval(teclaRightTimer);
+                    teclaRightTimer = null;
+                }
+                if (teclaDownTimer !== null) {
+                    clearInterval(teclaDownTimer);
+                    teclaDownTimer = null;
+                }
+            });
+
+            btn.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                btn.classList.remove('active');
+                
+                if (teclaLeftTimer !== null) {
+                    clearInterval(teclaLeftTimer);
+                    teclaLeftTimer = null;
+                }
+                if (teclaRightTimer !== null) {
+                    clearInterval(teclaRightTimer);
+                    teclaRightTimer = null;
+                }
+                if (teclaDownTimer !== null) {
+                    clearInterval(teclaDownTimer);
+                    teclaDownTimer = null;
                 }
             });
         });
@@ -1078,9 +1169,18 @@ function createPiece() {
             paused = false;
             score = 0;
             level = 1;
-            dropInterval = 1000;
+            dropInterval = 1400;
             dropCounter = 0;
             lastTime = 0;
+            
+            if (teclaLeftTimer !== null) clearInterval(teclaLeftTimer);
+            if (teclaRightTimer !== null) clearInterval(teclaRightTimer);
+            if (teclaDownTimer !== null) clearInterval(teclaDownTimer);
+            
+            teclaLeftTimer = null;
+            teclaRightTimer = null;
+            teclaDownTimer = null;
+            
             createBoard();
             piece = createPiece();
             nextPiece = createPiece();
