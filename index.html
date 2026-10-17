@@ -262,8 +262,8 @@
 
   function ghostRow(p) {
     let gy = p.row;
-    while (!collides(p, 0, 1)) gy++;
-    return gy - 1;
+    while (!collides(p, 0, gy + 1)) gy++;
+    return gy;
   }
 
   function lockPiece() {
@@ -275,7 +275,7 @@
     clearLines();
     nextPiece = queue.shift() || randPiece();
     piece = makePiece(nextPiece, 3, -2);
-    if (collides(piece, 0, 0)) { gameOverNow(); return; }
+    if (collides(piece, 0, 2)) { gameOverNow(); return; }
     drawNext();
   }
 
@@ -285,7 +285,7 @@
       if (grid[r].every(c => c !== null)) lines.push(r);
     }
     if (!lines.length) return;
-    for (const r of lines) grid.splice(r, 1, new Array(COLS).fill(null));
+    for (const r of lines) grid.splice(r, 1);
     while (grid.length < ROWS) grid.unshift(new Array(COLS).fill(null));
     const n = lines.length;
     score += [0, 40, 100, 300, 500][n];
@@ -333,6 +333,7 @@
     pauseOverlay.classList.remove("show");
     updateHud(); drawNext();
 
+    lastTime = performance.now();
     if (rafId === null) loop(performance.now());
   }
 
@@ -470,14 +471,7 @@
   // ---------- Init ----------
   try { muted = localStorage.getItem(MUTE_KEY) === "true"; } catch (e) {}
   if (muted) muteBtn.textContent = "🔇";
-  updateHud(); drawNext();
-  started = true;
-  grid = emptyGrid();
-  queue = [randPiece(), randPiece(), randPiece()];
-  nextPiece = queue.shift();
-  piece = makePiece(nextPiece, 3, -2);
-  lastTime = performance.now();
-  rafId = requestAnimationFrame(loop);
+  restart();
 })();
 </script>
 </body>
